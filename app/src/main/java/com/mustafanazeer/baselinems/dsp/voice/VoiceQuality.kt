@@ -11,9 +11,9 @@ import kotlin.math.min
  *
  * 1. Sustained voice activity (heuristic 3 in the ADR). At least 15 of the 30
  *    second window must contain voice activity above the speech threshold. The
- *    floor was reduced from 20 seconds to 15 seconds per Patient Advocate must
- *    fix PA4 to keep MS users with moderate bulbar dysarthria from being
- *    excluded outright; the per feature flags below carry the remaining
+ *    floor was reduced from 20 seconds to 15 seconds per accessibility
+ *    requirement PA4, to keep MS users with moderate bulbar dysarthria from
+ *    being excluded outright; the per feature flags below carry the remaining
  *    discrimination load.
  *
  * 2. No clipping (heuristic 2 in the ADR). More than 1 percent of samples at
@@ -69,7 +69,7 @@ object VoiceQuality {
     // Frame width tolerance on the engagement floor. The autocorrelation analyzer at 40 ms
     // windows with 10 ms hops loses up to one window of voiced classification at each end of a
     // voiced segment (the 40 ms window must lie fully inside the voiced region to register).
-    // A 0.1 second tolerance corresponds to one hop and keeps Patient Advocate inclusivity for
+    // A 0.1 second tolerance corresponds to one hop and keeps the inclusivity margin for
     // recordings that hit the analytic 15 s floor but realize 14.9 s after framing.
     private const val ENGAGEMENT_FRAME_TOLERANCE_SEC: Double = 0.1
 

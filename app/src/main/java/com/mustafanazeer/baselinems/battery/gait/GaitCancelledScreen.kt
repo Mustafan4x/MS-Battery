@@ -13,9 +13,9 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Cancelled screen for the gait test. Mirrors the Phase 6 `VisionCancelledScreen` and Phase 8
- * `VoiceCancelledScreen` shape. Renders no per feature line; per Patient Advocate Phase 6
- * Finding A the cancelled screen must not say "you walked N steps" or any other count
- * statement.
+ * `VoiceCancelledScreen` shape. Renders no per feature line; per the Phase 6
+ * accessibility review (Finding A) the cancelled screen must not say "you walked N
+ * steps" or any other count statement.
  */
 @Composable
 fun GaitCancelledScreen(onDone: () -> Unit) {

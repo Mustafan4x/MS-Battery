@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
  * buffer of length `sampleRateHz * durationSec` captured from the device microphone.
  *
  * @apiNote Caller is responsible for zeroing the returned ShortArray after feature
- * extraction completes per ADR 0006 Section 7 (Security Engineer must fix SE2). The
+ * extraction completes per ADR 0006 Section 7 (requirement SE2). The
  * canonical pattern is a `try`/`finally` block around feature extraction with
  * `java.util.Arrays.fill(buffer, 0.toShort())` in the `finally`. See `VoiceTestViewModel`
  * for the implementation. The wrapper itself does not zero the buffer it returns because
@@ -43,13 +43,13 @@ interface AudioCapture {
  * amplitude distribution and the autocorrelation structure that jitter, shimmer, and HNR
  * depend on. `MIC` is the closest the platform exposes to a raw acoustic signal.
  *
- * Lifecycle contract per ADR 0006 Section 3 (Security Engineer SE3): `AudioRecord.stop()`
+ * Lifecycle contract per ADR 0006 Section 3 (requirement SE3): `AudioRecord.stop()`
  * and `AudioRecord.release()` fire synchronously inside a `try`/`finally` pair on every
  * termination path (normal completion, mid capture coroutine cancellation, exception in
  * the read loop). The `release()` call frees the native AudioRecord buffers immediately;
  * nothing is deferred to the garbage collector.
  *
- * No logging contract per ADR 0006 Section 7 (Security Engineer SE4): the implementation
+ * No logging contract per ADR 0006 Section 7 (requirement SE4): the implementation
  * never logs a raw sample, the capture buffer, or any per chunk content. The grep gate
  * for `Log\..*\b(buffer|pcm|samples|audio)\b` and `Log\..*\.contentToString\(\)` returns
  * zero matches in this file.

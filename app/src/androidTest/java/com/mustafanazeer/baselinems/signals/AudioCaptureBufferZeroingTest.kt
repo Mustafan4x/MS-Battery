@@ -15,7 +15,7 @@ import org.junit.runner.RunWith
 import java.util.Arrays
 
 /**
- * Instrumented test for the Security Engineer SE2 buffer zeroing contract (ADR 0006 Section 7
+ * Instrumented test for the SE2 buffer zeroing contract (ADR 0006 Section 7
  * and `docs/security/hardening-checklist.md` Section J.3). Exercises the canonical
  * caller pattern `VoiceTestViewModel` will use to zero the captured PCM buffer after
  * feature extraction completes.
@@ -35,9 +35,9 @@ import java.util.Arrays
  *    is skipped via `assumeTrue` and the limitation is documented in the comment
  *    below.
  *
- * Runs as part of the user driven Phase 8 AVD walkthrough at phase close. Not part of
- * the headless agent build; the dispatch acceptance for Task 5 verifies the test
- * source file exists and compiles, not that it runs.
+ * Runs as part of the Phase 8 AVD walkthrough at phase close. It is not part of
+ * the headless CI build, where the check is only that this test source file
+ * exists and compiles, not that it runs.
  */
 @RunWith(AndroidJUnit4::class)
 class AudioCaptureBufferZeroingTest {

@@ -32,8 +32,8 @@ import kotlinx.coroutines.delay
  * looking at this screen during the walk (the phone is in a front pocket), so the visual is
  * deliberately minimal: no animated map, no decorative motion.
  *
- * In pocket cancel is provided by a 1.5 second long press on volume down (Phase 11 Task 2,
- * Patient Advocate Phase 4 Finding 1). The on screen Cancel button stays so users who pull
+ * In pocket cancel is provided by a 1.5 second long press on volume down (Phase 11,
+ * per the Phase 4 accessibility review, Finding 1). The on screen Cancel button stays so users who pull
  * the phone out can still reach a familiar control.
  */
 private const val TOTAL_DURATION_MILLIS = 30_000

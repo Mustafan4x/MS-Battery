@@ -18,7 +18,7 @@ import java.util.zip.GZIPOutputStream
  * pure JVM (no Android imports) so the header layout and the gzip round trip are unit testable
  * on the JVM.
  *
- * No logging contract (ADR 0006 Section 7, Security Engineer SE4): this file never logs a raw
+ * No logging contract (ADR 0006 Section 7, requirement SE4): this file never logs a raw
  * sample, the PCM buffer, or any per sample content. It does not import the Android `Log` API.
  */
 object VoiceWavWriter {
