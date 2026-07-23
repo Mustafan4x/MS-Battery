@@ -42,13 +42,8 @@ Thumbs.db
 # Misc
 .kotlin/
 
-# Maintainer's private files and working scaffolding (kept local, never tracked)
-CLAUDE.md
-future-ideas.md
-STATUS.md
-GETTING-STARTED.md
+# Local working files
 SPEC.md
-agents/
 docs/
 
 # Web showcase
