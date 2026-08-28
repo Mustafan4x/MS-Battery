@@ -13,7 +13,7 @@ import java.io.File
 import kotlin.math.abs
 
 /**
- * Replays the MAREA gait database (Khandelwal and Wickstrom 2017, Gait and Posture
+ * Replays the MAREA gait database (Khandelwal and Wickström 2017, Gait and Posture
  * 51, pages 84 to 90, DOI 10.1016/j.gaitpost.2016.09.023) through `GaitPipeline`
  * and emits per trial accuracy results to a CSV. Configuration mirrors
  * `NonanReplayTest`: env var `BASELINEMS_MAREA_PATH` (or system property

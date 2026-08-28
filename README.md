@@ -65,7 +65,7 @@ The gait pipeline is validated against three publicly downloadable IMU gait data
 |---|---|---|---|---|---|---|---|
 | Santos et al. 2022 | Leg strap (smartphone) | 25 | 499 | 19.53% | 66.36% | 0.573 | 0.806 |
 | NONAN GaitPrint (Wiles et al. 2023) | Pelvis (pocket analog) | 35 | 609 | **0.53%** | 86.83% | **0.946** | 0.650 |
-| MAREA (Khandelwal and Wickstrom 2017) | Waist (accel only) | 20 | pending | pending | n/a | n/a | n/a |
+| MAREA (Khandelwal and Wickström 2017) | Waist (accel only) | 20 | pending | pending | n/a | n/a | n/a |
 
 ### Cross sensor agreement
 
@@ -80,6 +80,17 @@ Cadence is the headline. On NONAN's pelvis sensor (the closest publicly availabl
 Stride length is mount specific. The Zero Velocity Update integrator is calibrated for front pocket mounting; on Santos's leg strap and NONAN's pelvis the pipeline under reads stride length significantly. The high ICC(3,1) of 0.806 (Santos) and 0.650 (NONAN) on stride length tells us the bias is reproducible across sessions, not noise, which is what we want for a calibrated pipeline on a non production mount.
 
 Full methodology (pipeline design, statistical methods, per dataset notes, limitations) is on the live demo `/methodology` page. Per trial results CSVs land under `app/build/validation/` after the env var gated replay tests run.
+
+### Dataset citations
+
+Each dataset below is the work of an independent research group and is used here
+under its own terms. Please cite the original authors, not this repository, when
+referring to any of these numbers.
+
+- **Santos G, Wanderley MM, Tavares T, Rocha A.** 2022. A multi-sensor human gait dataset captured through an optical system and inertial measurement units. *Scientific Data* 9. DOI [10.1038/s41597-022-01638-2](https://doi.org/10.1038/s41597-022-01638-2). Dataset: DOI [10.6084/m9.figshare.14727231](https://doi.org/10.6084/m9.figshare.14727231).
+- **Wiles TM, Mangalam M, Sommerfeld JH, et al.** 2023. NONAN GaitPrint: An IMU gait database of healthy young adults. *Scientific Data* 10:867. DOI [10.1038/s41597-023-02704-z](https://doi.org/10.1038/s41597-023-02704-z).
+- **Khandelwal S, Wickström N.** 2017. Evaluation of the performance of accelerometer-based gait event detection algorithms in different real-world scenarios using the MAREA gait database. *Gait and Posture* 51:84-90. DOI [10.1016/j.gaitpost.2016.09.023](https://doi.org/10.1016/j.gaitpost.2016.09.023). ISSN 0966-6362. The MAREA gait database is released by Halmstad University under terms that permit non commercial research use and require this citation; it is not redistributed here in whole or in part.
+- **Luo Y, et al.** 2020. A database of human gait performance on irregular and uneven surfaces collected by wearable sensors. *Scientific Data* 7:219. DOI [10.1038/s41597-020-0563-y](https://doi.org/10.1038/s41597-020-0563-y).
 
 ## Retention
 

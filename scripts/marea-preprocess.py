@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Preprocess the MAREA gait database (Khandelwal and Wickstrom 2017, Gait and
+Preprocess the MAREA gait database (Khandelwal and Wickström 2017, Gait and
 Posture 51, pages 84 to 90, DOI 10.1016/j.gaitpost.2016.09.023) into the layout
 the Kotlin MareaReplayTest consumes.
 

@@ -69,7 +69,7 @@ DATASETS = [
     {
         "key": "marea",
         "name": "MAREA",
-        "citation": "Khandelwal and Wickstrom, Gait Posture 2017.",
+        "citation": "Khandelwal and Wickström, Gait Posture 2017.",
         "doi": "10.1016/j.gaitpost.2016.09.023",
         "mount": "Waist (accelerometer-only)",
         "n_participants": 20,

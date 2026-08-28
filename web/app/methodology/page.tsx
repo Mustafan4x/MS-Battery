@@ -89,7 +89,7 @@ export default function MethodologyPage() {
         from inter-strike intervals. Stride length is not reported (no spatial
         ground truth, and the Madgwick orientation filter degrades to
         accelerometer-only attitude on this dataset). Citation: Khandelwal and
-        Wickstrom, Gait Posture 2017.
+        Wickström, Gait Posture 2017.
       </p>
 
       <h3>Luo et al. 2020 (irregular surfaces)</h3>
@@ -191,8 +191,10 @@ export default function MethodologyPage() {
           Journal of Chiropractic Medicine 15(2): 155-163.
         </li>
         <li>
-          Santos et al. 2022. A multi-sensor human gait dataset. Scientific
-          Data 9, DOI 10.6084/m9.figshare.14727231.
+          Santos G, Wanderley MM, Tavares T, Rocha A. 2022. A multi-sensor
+          human gait dataset captured through an optical system and inertial
+          measurement units. Scientific Data 9, DOI 10.1038/s41597-022-01638-2;
+          dataset DOI 10.6084/m9.figshare.14727231.
         </li>
         <li>
           Wiles TM, Mangalam M, Sommerfeld JH et al. 2023. NONAN GaitPrint: An
@@ -200,9 +202,10 @@ export default function MethodologyPage() {
           10.1038/s41597-023-02704-z.
         </li>
         <li>
-          Khandelwal S, Wickstrom N. 2017. Evaluation of the performance of
+          Khandelwal S, Wickström N. 2017. Evaluation of the performance of
           accelerometer-based gait event detection algorithms in different real-
-          world scenarios using the MAREA gait database. Gait and Posture 51.
+          world scenarios using the MAREA gait database. Gait and Posture 51:
+          84-90, DOI 10.1016/j.gaitpost.2016.09.023.
         </li>
         <li>
           Luo Y et al. 2020. A database of human gait performance on irregular
