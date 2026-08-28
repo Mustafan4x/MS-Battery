@@ -53,7 +53,7 @@ DATASETS = [
     {
         "key": "nonan",
         "name": "NONAN GaitPrint young adults",
-        "citation": "Likens et al., NONAN GaitPrint, Sci Data 2023.",
+        "citation": "Wiles et al., NONAN GaitPrint, Sci Data 2023.",
         "doi": "10.1038/s41597-023-02704-z",
         "mount": "Pelvis (sacrum, near-pocket analog)",
         "n_participants": 35,
@@ -70,7 +70,7 @@ DATASETS = [
         "key": "marea",
         "name": "MAREA",
         "citation": "Khandelwal and Wickstrom, Gait Posture 2017.",
-        "doi": "10.1016/j.gaitpost.2016.09.027",
+        "doi": "10.1016/j.gaitpost.2016.09.023",
         "mount": "Waist (accelerometer-only)",
         "n_participants": 20,
         "sample_rate_hz": 128,
@@ -78,8 +78,21 @@ DATASETS = [
         "results_filename": "marea-replay-results.csv",
         "has_repeated_sessions": False,
         "has_stride_length_truth": False,
+        # treadIncline is the longest recording per subject and would otherwise be
+        # roughly 44 percent of the trials, so the headline figure is level walking
+        # and inclined walking is reported separately. No other dataset in this
+        # table contains inclined walking, so pooling would make this row describe
+        # a different regime from the three it sits beside.
+        "subgroup_column": "activity",
+        "subgroups": {
+            "level": ["treadWalk", "indoorWalk", "outdoorWalk"],
+            "incline": ["treadIncline"],
+        },
+        "headline_subgroup": "level",
         "caveats": [
             "Accelerometer-only IMU; Madgwick filter degrades to accelerometer-only attitude. Stride length not reported (no spatial ground truth).",
+            "Headline cadence error covers level walking only (treadmill, indoor, outdoor). Inclined treadmill walking is reported separately under by_subgroup; no other dataset in this table includes inclined walking.",
+            "Ground truth is heel strike timing from foot mounted force sensitive resistors. Cadence truth is derived from the interval between consecutive heel strikes rather than a step count over a fixed window, which avoids quantizing truth to 2 steps per minute at the 30 second trial length.",
         ],
     },
     {
@@ -158,14 +171,44 @@ def main() -> None:
             print(f"  {ds['key']:7s} {ds['status']:9s} n={ds['n_trials_processed']:4d}  {summary}")
 
 
+def cadence_stats(df: pd.DataFrame) -> dict:
+    if "cadence_pct_error" not in df.columns:
+        return {}
+    err = df["cadence_pct_error"].dropna().abs()
+    if len(err) == 0:
+        return {}
+    return {
+        "n_trials": int(len(err)),
+        "cadence_mae_pct": round(float(np.mean(err)), 2),
+        "cadence_median_pct": round(float(np.median(err)), 2),
+        "cadence_p95_pct": round(float(np.percentile(err, 95)), 2),
+    }
+
+
 def compute_ground_truth_metrics(df: pd.DataFrame, ds: dict) -> dict:
     metrics = {}
-    if "cadence_pct_error" in df.columns:
-        cadence_err = df["cadence_pct_error"].dropna().abs()
-        if len(cadence_err) > 0:
-            metrics["cadence_mae_pct"] = round(float(np.mean(cadence_err)), 2)
-            metrics["cadence_median_pct"] = round(float(np.median(cadence_err)), 2)
-            metrics["cadence_p95_pct"] = round(float(np.percentile(cadence_err, 95)), 2)
+    subgroup_col = ds.get("subgroup_column")
+    subgroups = ds.get("subgroups")
+    if subgroup_col and subgroups and subgroup_col in df.columns:
+        by_subgroup = {}
+        for label, activities in subgroups.items():
+            stats = cadence_stats(df[df[subgroup_col].isin(activities)])
+            if stats:
+                by_subgroup[label] = stats
+        pooled = cadence_stats(df)
+        if pooled:
+            by_subgroup["pooled"] = pooled
+        metrics["by_subgroup"] = by_subgroup
+        # The headline stays at the top level so this row reads the same way as the
+        # rows beside it, but it describes the headline subgroup rather than the
+        # pooled sample. by_subgroup carries the rest.
+        headline = by_subgroup.get(ds.get("headline_subgroup", ""), {})
+        metrics.update({k: v for k, v in headline.items() if k != "n_trials"})
+        metrics["headline_subgroup"] = ds.get("headline_subgroup")
+        metrics["headline_n_trials"] = headline.get("n_trials")
+    elif "cadence_pct_error" in df.columns:
+        stats = cadence_stats(df)
+        metrics.update({k: v for k, v in stats.items() if k != "n_trials"})
     if ds["has_stride_length_truth"] and "stride_length_pct_error" in df.columns:
         stride_err = df["stride_length_pct_error"].dropna().abs()
         if len(stride_err) > 0:
