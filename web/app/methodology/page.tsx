@@ -83,13 +83,35 @@ export default function MethodologyPage() {
 
       <h3>MAREA</h3>
       <p>
-        20 healthy adults walking indoor and outdoor, Shimmer3 accelerometers
-        (no gyroscope) at waist, wrist, and both ankles at 128 Hz. Foot-mounted
-        force-sensitive resistors provide heel-strike events; cadence is derived
-        from inter-strike intervals. Stride length is not reported (no spatial
-        ground truth, and the Madgwick orientation filter degrades to
-        accelerometer-only attitude on this dataset). Citation: Khandelwal and
-        Wickström, Gait Posture 2017.
+        20 healthy adults, 11 on an indoor protocol and 9 outdoors, Shimmer3
+        accelerometers (no gyroscope) at waist, wrist, and both feet at 128 Hz.
+        Foot-mounted force-sensitive resistors provide heel-strike events;
+        cadence is derived from inter-strike intervals. Stride length is not
+        reported (no spatial ground truth, and the Madgwick orientation filter
+        degrades to accelerometer-only attitude on this dataset). Citation:
+        Khandelwal and Wickström, Gait Posture 2017.
+      </p>
+      <p>
+        Only walking is replayed. The three MAREA activities whose names end in
+        Run append a running bout to the corresponding walk and are excluded.
+        Level walking (treadmill, indoor, outdoor) is reported separately from
+        inclined treadmill walking, because inclined walking appears in no other
+        dataset here and would otherwise be 44 percent of the sample.
+      </p>
+      <p>
+        Trials are 30 second windows matching the capture length the application
+        actually uses. Two limits belong with the headline number. At 30 seconds
+        the pipeline&apos;s own cadence output is quantized to 2 steps per minute,
+        about 1.77 percent of median cadence, so a perfect step counter would
+        still register roughly 0.43 percent mean absolute error; replaying the
+        same recordings at full segment length, where quantization is negligible,
+        gives 0.32 percent on level walking and 1.20 percent on inclined. And the
+        error is systematically positive, a mean of 0.76 percent on level and
+        1.66 percent on inclined walking, meaning the pipeline slightly over
+        counts steps. Because cadence error depends on trial length through that
+        quantization, comparing this row against the others is only sound where
+        trial lengths match. MAREA is used here for measurement only and has not
+        been allowed to tune any pipeline parameter.
       </p>
 
       <h3>Luo et al. 2020 (irregular surfaces)</h3>

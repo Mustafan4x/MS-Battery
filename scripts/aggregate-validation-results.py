@@ -93,6 +93,10 @@ DATASETS = [
             "Accelerometer-only IMU; Madgwick filter degrades to accelerometer-only attitude. Stride length not reported (no spatial ground truth).",
             "Headline cadence error covers level walking only (treadmill, indoor, outdoor). Inclined treadmill walking is reported separately under by_subgroup; no other dataset in this table includes inclined walking.",
             "Ground truth is heel strike timing from foot mounted force sensitive resistors. Cadence truth is derived from the interval between consecutive heel strikes rather than a step count over a fixed window, which avoids quantizing truth to 2 steps per minute at the 30 second trial length.",
+            "Trials are 30 second windows, matching the capture length the application actually uses. At that length the pipeline's own cadence output is quantized to 2 steps per minute (1.77 percent of median cadence), so a perfect step counter would still register roughly 0.43 percent mean absolute error. About half the reported level walking figure is therefore instrument resolution rather than detection error.",
+            "Replaying the same data at full segment length, where quantization is negligible, gives 0.32 percent mean absolute cadence error on level walking across 31 segments (outdoor 0.19 percent, treadmill 0.42 percent, indoor 0.32 percent) and 1.20 percent on inclined walking across 11. The level and incline gap therefore survives independently of trial length and is a property of the pipeline, not of the windowing.",
+            "Cadence error is systematically positive: the pipeline over counts steps by a mean of 0.76 percent on level walking and 1.66 percent on inclined walking. Recorded as a measured characteristic; MAREA is used for measurement only and has not been allowed to tune any pipeline parameter.",
+            "Cadence mean absolute error is trial length dependent because of the quantization above, so comparing this figure against other rows in this table is only sound where trial lengths match.",
         ],
     },
     {
@@ -125,6 +129,20 @@ def main() -> None:
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Results CSVs are produced by env var gated replay tests, and a machine that
+    # has run only some of them would otherwise rewrite every other dataset to
+    # "pending" with zeroed metrics, silently destroying published numbers. Carry
+    # forward any completed entry whose CSV is simply absent from this run.
+    previous = {}
+    if output_path.exists():
+        try:
+            with open(output_path) as f:
+                for entry in json.load(f).get("datasets", []):
+                    if entry.get("status") == "complete":
+                        previous[entry.get("key")] = entry
+        except (json.JSONDecodeError, OSError) as exc:
+            print(f"warning: could not read existing {output_path}: {exc}")
+
     out = {
         "generated_at_utc": pd.Timestamp.utcnow().isoformat(),
         "datasets": [],
@@ -143,6 +161,15 @@ def main() -> None:
         }
         csv_path = results_root / ds["results_filename"]
         if not csv_path.exists():
+            carried = previous.get(ds["key"])
+            if carried:
+                # Refresh the descriptive fields from DATASETS so citation and DOI
+                # corrections still propagate, but keep the measured numbers.
+                carried = {**carried, **entry}
+                carried["status"] = "complete"
+                out["datasets"].append(carried)
+                print(f"  {ds['key']:7s} carried forward (no {ds['results_filename']} in this run)")
+                continue
             entry["status"] = "pending"
             entry["n_trials_processed"] = 0
             entry["metrics"] = {}

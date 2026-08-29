@@ -58,11 +58,27 @@ export function ValidationTable({ datasets }: Props) {
                   <td className="py-4 pr-6">{ds.mount}</td>
                   <td className="py-4 pr-6 numeric">{ds.n_participants}</td>
                   <td className="py-4 pr-6 numeric">
-                    {ds.status === "complete" ? ds.n_trials_processed : (
+                    {ds.status === "complete" ? (
+                      <>
+                        {ds.metrics.headline_n_trials ?? ds.n_trials_processed}
+                        {ds.metrics.headline_n_trials !== undefined && (
+                          <div className="text-xs text-[var(--color-ink-soft)] mt-1">
+                            of {ds.n_trials_processed}
+                          </div>
+                        )}
+                      </>
+                    ) : (
                       <span className="text-[var(--color-ink-soft)]">pending</span>
                     )}
                   </td>
-                  <td className="py-4 pr-6 numeric">{fmtPct(ds.metrics.cadence_mae_pct)}</td>
+                  <td className="py-4 pr-6 numeric">
+                    {fmtPct(ds.metrics.cadence_mae_pct)}
+                    {ds.metrics.headline_subgroup && (
+                      <div className="text-xs text-[var(--color-ink-soft)] mt-1">
+                        {ds.metrics.headline_subgroup} only
+                      </div>
+                    )}
+                  </td>
                   <td className="py-4 pr-6 numeric">{fmtPct(ds.metrics.stride_length_mae_pct)}</td>
                   <td className="py-4 pr-6 numeric">{fmtNum(ds.metrics.cadence_icc_3_1, 3)}</td>
                   <td className="py-4 pr-6 numeric">{fmtNum(ds.metrics.stride_length_icc_3_1, 3)}</td>

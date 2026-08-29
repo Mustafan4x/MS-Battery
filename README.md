@@ -57,7 +57,7 @@ A web showcase of the gait pipeline running on multiple public datasets, with th
 
 ## Validation
 
-The gait pipeline is validated against three publicly downloadable IMU gait datasets covering 90 unique participants across three independent research groups (a fourth dataset, MAREA, is pending an email release form). Each dataset is replayed end to end through the production `GaitPipeline` and the resulting per trial numbers are aggregated into `web/public/validation-summary.json` by `scripts/aggregate-validation-results.py`.
+The gait pipeline is validated against four publicly downloadable IMU gait datasets covering 110 unique participants across four independent research groups. Each dataset is replayed end to end through the production `GaitPipeline` and the resulting per trial numbers are aggregated into `web/public/validation-summary.json` by `scripts/aggregate-validation-results.py`.
 
 ### Against published ground truth
 
@@ -65,7 +65,7 @@ The gait pipeline is validated against three publicly downloadable IMU gait data
 |---|---|---|---|---|---|---|---|
 | Santos et al. 2022 | Leg strap (smartphone) | 25 | 499 | 19.53% | 66.36% | 0.573 | 0.806 |
 | NONAN GaitPrint (Wiles et al. 2023) | Pelvis (pocket analog) | 35 | 609 | **0.53%** | 86.83% | **0.946** | 0.650 |
-| MAREA (Khandelwal and Wickström 2017) | Waist (accel only) | 20 | pending | pending | n/a | n/a | n/a |
+| MAREA (Khandelwal and Wickström 2017) | Waist (accel only) | 20 | 286 | 0.93% | n/a | n/a | n/a |
 
 ### Cross sensor agreement
 
@@ -76,6 +76,8 @@ The gait pipeline is validated against three publicly downloadable IMU gait data
 ### What these numbers say
 
 Cadence is the headline. On NONAN's pelvis sensor (the closest publicly available analog to the BaselineMS front pocket production mount), the pipeline reproduces published per stride cadence within 0.53 percent on average across 35 participants and 609 trials, with a test retest ICC(3,1) of 0.946 (excellent reliability per Koo and Li 2016). On Luo's outdoor surfaces dataset, where no per trial ground truth exists, cadence agreement between trunk and shank running the same pipeline sits inside Bland-Altman limits of [-21.78, +17.72] steps per minute across 30 participants and 1620 trials across nine surface types.
+
+MAREA adds an accelerometer only waist mount at 0.93 percent cadence error across 286 level walking trials from all 20 participants, with no gyroscope available at any sensor placement. Two things are worth stating plainly about that number. Trials are 30 second windows matching the application's real capture length, and at that length the pipeline's cadence output is quantized to 2 steps per minute, so roughly half of the 0.93 percent is instrument resolution rather than detection error; replaying the same data at full segment length, where quantization is negligible, gives 0.32 percent. And the pipeline over counts steps by a small systematic margin, 0.76 percent on level walking. A further 229 inclined treadmill trials are reported separately at 1.86 percent (1.20 percent at segment length), the only inclined walking anywhere in this table; the level and incline gap holds at both trial lengths, so it is a property of the pipeline rather than of the windowing.
 
 Stride length is mount specific. The Zero Velocity Update integrator is calibrated for front pocket mounting; on Santos's leg strap and NONAN's pelvis the pipeline under reads stride length significantly. The high ICC(3,1) of 0.806 (Santos) and 0.650 (NONAN) on stride length tells us the bias is reproducible across sessions, not noise, which is what we want for a calibrated pipeline on a non production mount.
 
