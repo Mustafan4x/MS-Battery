@@ -53,7 +53,7 @@ DATASETS = [
     {
         "key": "nonan",
         "name": "NONAN GaitPrint young adults",
-        "citation": "Likens et al., NONAN GaitPrint, Sci Data 2023.",
+        "citation": "Wiles et al., NONAN GaitPrint, Sci Data 2023.",
         "doi": "10.1038/s41597-023-02704-z",
         "mount": "Pelvis (sacrum, near-pocket analog)",
         "n_participants": 35,
@@ -69,8 +69,8 @@ DATASETS = [
     {
         "key": "marea",
         "name": "MAREA",
-        "citation": "Khandelwal and Wickstrom, Gait Posture 2017.",
-        "doi": "10.1016/j.gaitpost.2016.09.027",
+        "citation": "Khandelwal and Wickström, Gait Posture 2017.",
+        "doi": "10.1016/j.gaitpost.2016.09.023",
         "mount": "Waist (accelerometer-only)",
         "n_participants": 20,
         "sample_rate_hz": 128,
@@ -78,8 +78,25 @@ DATASETS = [
         "results_filename": "marea-replay-results.csv",
         "has_repeated_sessions": False,
         "has_stride_length_truth": False,
+        # treadIncline is the longest recording per subject and would otherwise be
+        # roughly 44 percent of the trials, so the headline figure is level walking
+        # and inclined walking is reported separately. No other dataset in this
+        # table contains inclined walking, so pooling would make this row describe
+        # a different regime from the three it sits beside.
+        "subgroup_column": "activity",
+        "subgroups": {
+            "level": ["treadWalk", "indoorWalk", "outdoorWalk"],
+            "incline": ["treadIncline"],
+        },
+        "headline_subgroup": "level",
         "caveats": [
             "Accelerometer-only IMU; Madgwick filter degrades to accelerometer-only attitude. Stride length not reported (no spatial ground truth).",
+            "Headline cadence error covers level walking only (treadmill, indoor, outdoor). Inclined treadmill walking is reported separately under by_subgroup; no other dataset in this table includes inclined walking.",
+            "Ground truth is heel strike timing from foot mounted force sensitive resistors. Cadence truth is derived from the interval between consecutive heel strikes rather than a step count over a fixed window, which avoids quantizing truth to 2 steps per minute at the 30 second trial length.",
+            "Trials are 30 second windows, matching the capture length the application actually uses. At that length the pipeline's own cadence output is quantized to 2 steps per minute (1.77 percent of median cadence), so a perfect step counter would still register roughly 0.43 percent mean absolute error. About half the reported level walking figure is therefore instrument resolution rather than detection error.",
+            "Replaying the same data at full segment length, where quantization is negligible, gives 0.32 percent mean absolute cadence error on level walking across 31 segments (outdoor 0.19 percent, treadmill 0.42 percent, indoor 0.32 percent) and 1.20 percent on inclined walking across 11. The level and incline gap therefore survives independently of trial length and is a property of the pipeline, not of the windowing.",
+            "Cadence error is systematically positive: the pipeline over counts steps by a mean of 0.76 percent on level walking and 1.66 percent on inclined walking. Recorded as a measured characteristic; MAREA is used for measurement only and has not been allowed to tune any pipeline parameter.",
+            "Cadence mean absolute error is trial length dependent because of the quantization above, so comparing this figure against other rows in this table is only sound where trial lengths match.",
         ],
     },
     {
@@ -112,6 +129,20 @@ def main() -> None:
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Results CSVs are produced by env var gated replay tests, and a machine that
+    # has run only some of them would otherwise rewrite every other dataset to
+    # "pending" with zeroed metrics, silently destroying published numbers. Carry
+    # forward any completed entry whose CSV is simply absent from this run.
+    previous = {}
+    if output_path.exists():
+        try:
+            with open(output_path) as f:
+                for entry in json.load(f).get("datasets", []):
+                    if entry.get("status") == "complete":
+                        previous[entry.get("key")] = entry
+        except (json.JSONDecodeError, OSError) as exc:
+            print(f"warning: could not read existing {output_path}: {exc}")
+
     out = {
         "generated_at_utc": pd.Timestamp.utcnow().isoformat(),
         "datasets": [],
@@ -130,6 +161,15 @@ def main() -> None:
         }
         csv_path = results_root / ds["results_filename"]
         if not csv_path.exists():
+            carried = previous.get(ds["key"])
+            if carried:
+                # Refresh the descriptive fields from DATASETS so citation and DOI
+                # corrections still propagate, but keep the measured numbers.
+                carried = {**carried, **entry}
+                carried["status"] = "complete"
+                out["datasets"].append(carried)
+                print(f"  {ds['key']:7s} carried forward (no {ds['results_filename']} in this run)")
+                continue
             entry["status"] = "pending"
             entry["n_trials_processed"] = 0
             entry["metrics"] = {}
@@ -158,14 +198,44 @@ def main() -> None:
             print(f"  {ds['key']:7s} {ds['status']:9s} n={ds['n_trials_processed']:4d}  {summary}")
 
 
+def cadence_stats(df: pd.DataFrame) -> dict:
+    if "cadence_pct_error" not in df.columns:
+        return {}
+    err = df["cadence_pct_error"].dropna().abs()
+    if len(err) == 0:
+        return {}
+    return {
+        "n_trials": int(len(err)),
+        "cadence_mae_pct": round(float(np.mean(err)), 2),
+        "cadence_median_pct": round(float(np.median(err)), 2),
+        "cadence_p95_pct": round(float(np.percentile(err, 95)), 2),
+    }
+
+
 def compute_ground_truth_metrics(df: pd.DataFrame, ds: dict) -> dict:
     metrics = {}
-    if "cadence_pct_error" in df.columns:
-        cadence_err = df["cadence_pct_error"].dropna().abs()
-        if len(cadence_err) > 0:
-            metrics["cadence_mae_pct"] = round(float(np.mean(cadence_err)), 2)
-            metrics["cadence_median_pct"] = round(float(np.median(cadence_err)), 2)
-            metrics["cadence_p95_pct"] = round(float(np.percentile(cadence_err, 95)), 2)
+    subgroup_col = ds.get("subgroup_column")
+    subgroups = ds.get("subgroups")
+    if subgroup_col and subgroups and subgroup_col in df.columns:
+        by_subgroup = {}
+        for label, activities in subgroups.items():
+            stats = cadence_stats(df[df[subgroup_col].isin(activities)])
+            if stats:
+                by_subgroup[label] = stats
+        pooled = cadence_stats(df)
+        if pooled:
+            by_subgroup["pooled"] = pooled
+        metrics["by_subgroup"] = by_subgroup
+        # The headline stays at the top level so this row reads the same way as the
+        # rows beside it, but it describes the headline subgroup rather than the
+        # pooled sample. by_subgroup carries the rest.
+        headline = by_subgroup.get(ds.get("headline_subgroup", ""), {})
+        metrics.update({k: v for k, v in headline.items() if k != "n_trials"})
+        metrics["headline_subgroup"] = ds.get("headline_subgroup")
+        metrics["headline_n_trials"] = headline.get("n_trials")
+    elif "cadence_pct_error" in df.columns:
+        stats = cadence_stats(df)
+        metrics.update({k: v for k, v in stats.items() if k != "n_trials"})
     if ds["has_stride_length_truth"] and "stride_length_pct_error" in df.columns:
         stride_err = df["stride_length_pct_error"].dropna().abs()
         if len(stride_err) > 0:
@@ -219,8 +289,14 @@ def icc_3_1(df: pd.DataFrame, target_col: str):
             ratings=target_col,
             nan_policy="omit",
         )
-        row = icc[icc["Type"] == "ICC3"]
+        # ICC(3,1) is the consistency, single rater form. Pingouin labelled it
+        # "ICC3" in older releases and "ICC(C,1)" from 0.6 onward. Matching only
+        # the old label made this return None silently on a current install,
+        # which quietly dropped every published ICC from the summary rather than
+        # failing loudly. Accept both spellings.
+        row = icc[icc["Type"].isin(("ICC3", "ICC(C,1)"))]
         if row.empty:
+            print(f"warning: no ICC(3,1) row in pingouin output; saw {list(icc['Type'])}")
             return None
         return float(row.iloc[0]["ICC"])
     except Exception:
