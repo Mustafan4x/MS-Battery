@@ -289,8 +289,14 @@ def icc_3_1(df: pd.DataFrame, target_col: str):
             ratings=target_col,
             nan_policy="omit",
         )
-        row = icc[icc["Type"] == "ICC3"]
+        # ICC(3,1) is the consistency, single rater form. Pingouin labelled it
+        # "ICC3" in older releases and "ICC(C,1)" from 0.6 onward. Matching only
+        # the old label made this return None silently on a current install,
+        # which quietly dropped every published ICC from the summary rather than
+        # failing loudly. Accept both spellings.
+        row = icc[icc["Type"].isin(("ICC3", "ICC(C,1)"))]
         if row.empty:
+            print(f"warning: no ICC(3,1) row in pingouin output; saw {list(icc['Type'])}")
             return None
         return float(row.iloc[0]["ICC"])
     except Exception:
