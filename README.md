@@ -2,7 +2,7 @@
 
 A native Android application that lets people living with Multiple Sclerosis self administer a short, sensor backed set of five tests once a week, track results longitudinally on device, and share a clinician facing PDF report.
 
-The technical centerpiece is a gait analysis pipeline that turns 30 seconds of phone IMU data into stride length, cadence, step time variability, and stride asymmetry. Pipeline accuracy is validated against a measured walking course; methodology and error numbers will appear in the Validation section below as the experiments complete.
+The technical centerpiece is a gait analysis pipeline that turns 30 seconds of phone IMU data into stride length, cadence, step time variability, and stride asymmetry. Pipeline accuracy is validated by replaying public IMU gait datasets end to end through the production pipeline; the methodology and the error numbers are in the Validation section below.
 
 ## Problem
 
@@ -18,7 +18,7 @@ This application is not a medical device. It does not diagnose or treat any cond
 
 ## Status
 
-The data layer, the test module abstraction, the weekly battery orchestrator, and the Compose UI shell are in place. All five tests are implemented and wired into the weekly battery: the bilateral tap test, the gait analysis pipeline (IMU capture, orientation tracking, world frame projection, feature extraction), the low contrast vision test, the Symbol Digit Modalities Test smartphone variant, and the 30 second voice reading test with Praat compatible acoustic features. A longitudinal Reports screen surfaces per test trends with drill in detail screens for each instrument. PDF and CSV export through the Android Share Intent ships from that same Reports screen on demand. Remaining work is the accessibility audit, the beta cohort recruitment and run, and the Play Store internal testing track polish pass.
+The data layer, the test module abstraction, the weekly battery orchestrator, and the Compose UI shell are in place. All five tests are implemented and wired into the weekly battery: the bilateral tap test, the gait analysis pipeline (IMU capture, orientation tracking, world frame projection, feature extraction), the low contrast vision test, the Symbol Digit Modalities Test smartphone variant, and the 30 second voice reading test with Praat compatible acoustic features. A longitudinal Reports screen surfaces per test trends with drill in detail screens for each instrument. PDF and CSV export through the Android Share Intent ships from that same Reports screen on demand. The accessibility audit and its remediation pass are complete, and the application is published to a Google Play internal testing track. Remaining work is the beta cohort run and the day 30 retention numbers reserved in the Retention section below.
 
 ## How it is built
 
